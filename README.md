@@ -9,9 +9,9 @@ This project was made for [The Odin Project](https://www.theodinproject.com/abou
 
 * Basic arithmetic operations:
 	* addition
-	* substraction
+	* subtraction
 	* multiplication
-	* divition
+	* division
 * Mouse support
 * Keyboard support
 * It has buttons for:
