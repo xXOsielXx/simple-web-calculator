@@ -2,63 +2,28 @@ let num1;
 let operator;
 let num2;
 
-function resetVars() {
-	num1 = ""
-	operator = ""
-	num2 = ""
-};
-
 resetVars();
 
-function operate(
-	num1, 
-	operator, 
-	num2
-) {
-	let result;
-
-	switch(operator) {
-		case "+":
-			result = num1 + num2;
-			break;
-		case "-":
-			result = num1 - num2;
-			break;
-		case "x":
-			result = num1 * num2;
-			break;
-		case "÷":
-			result = num1 / num2;
-			break
-	};
-
-	return result;
-};
-
 const panel = document.querySelector("#panel span")
-
-function displayPanelContent() {
-	panel.textContent = num1 + operator + num2;
-};
-
 let symbols = ["+", "-", "x", "÷"];
-
-function checkForSymbols(scope) {
-	return symbols.some(symbol => {
-		if (scope=="lastChar") {
-			return panel.textContent.charAt(
-				panel.textContent.length - 1) == symbol;
-		}
-		else {
-			return panel.textContent.includes(symbol);
-		}
-	});
-};
-
 let currentNumber = "first";
 
-const numbers = document.querySelectorAll(".number");
+// Reset button
 
+const resetBtn = document.querySelector("#reset-btn");
+resetBtn.addEventListener("click", () => {
+	resetVars();
+	panel.textContent = "";
+});
+
+// Delete button
+
+const deleteBtn = document.querySelector("#delete-btn");
+deleteBtn.addEventListener("click", deleteChar);
+
+// Numbers
+
+const numbers = document.querySelectorAll(".number");
 numbers.forEach(e => {
 	e.addEventListener("click", () => {
 		if (!panel.textContent.includes("e")) {
@@ -74,37 +39,23 @@ numbers.forEach(e => {
 	})
 });
 
-function displayDot() {
-	if (
-		currentNumber=="first" && 
-		num1 &&
-		!num1.includes(".")
-		) {
-		num1 += ".";
-	}
-	else if (
-		currentNumber=="second" && 
-		num2 &&
-		!num2.includes(".")
-		) {
-		num2 += ".";
-	}
-	displayPanelContent();
-}
+// Dot button
 
 const dotBtn = document.querySelector("#dot-btn");
-
 dotBtn.addEventListener("click", displayDot);
 
-const operators = document.querySelectorAll(".operator");
+// Operators
 
+const operators = document.querySelectorAll(".operator");
 operators.forEach(e => {
 	e.addEventListener("click", () => {
 		if (!panel.textContent.includes("e") && 
 			!checkForSymbols("lastChar")
 			) {
 			if (num2) {
-				displayResult()
+				displayResult();
+				operator = e.textContent;
+				currentNumber = "second";
 			}
 			else if (panel.textContent) {
 				operator = e.textContent;
@@ -119,53 +70,16 @@ operators.forEach(e => {
 	})
 });
 
-const resetBtn = document.querySelector("#reset-btn");
-
-resetBtn.addEventListener("click", () => {
-	resetVars();
-	panel.textContent = "";
-});
-
-function deleteChar() {
-	if (panel.textContent=="Infinity") {
-		resetVars();
-	}
-	else if (currentNumber=="first") {
-		num1 = num1.slice(0, -1);
-	}
-	else if(currentNumber=="second" && num2) {
-		num2 = num2.slice(0, -1);
-	}
-	else {
-		operator = operator.slice(0, -1);
-		currentNumber = "first";
-	}
-	displayPanelContent();
-}
-
-const deleteBtn = document.querySelector("#delete-btn");
-
-deleteBtn.addEventListener("click", deleteChar);
+// Equal button
 
 const equalBtn = document.querySelector("#equal-btn");
-
-function displayResult() {
-	let result = operate(parseFloat(num1), operator, parseFloat(num2));
-	if (!Number.isInteger(result)) {
-		result = result.toFixed(2);
-	}
-	panel.textContent = result;
-	num1 = String(result);
-	operator = "";
-	num2 = "";
-	currentNumber = "first";
-};
-
 equalBtn.addEventListener("click", () => {
 	if (!panel.textContent.includes("e") && num2) {
-	  displayResult();
+	  displayResult(true);
 	}
 });
+
+// Keyboard
 
 document.addEventListener("keydown", e => {
 	let key = e.key;
@@ -193,7 +107,11 @@ document.addEventListener("keydown", e => {
 					num1 += key;
 				}
 			}
-			else {
+			else if(!checkForSymbols("lastChar")) {
+				if (num2) {
+					displayResult();
+					operator = key;
+				}
 				if (isOperator) {
 					operator = key;
 				}
@@ -203,20 +121,14 @@ document.addEventListener("keydown", e => {
 				else if(key == "*") {
 					operator = "x";
 				}
-
-				if (num2) {
-					displayResult();
-				}
-				else {
-					currentNumber = "second";
-				}
+				currentNumber = "second";
 			}
 		}
 		else if(key == "=" || 
 			key == "Enter"
 			) {
 			if (!panel.textContent.includes("e") && num2) {
-	  			displayResult();
+	  			displayResult(true);
 			}
 		}
 		else if(key == ".") {
@@ -234,3 +146,101 @@ document.addEventListener("keydown", e => {
 
 	displayPanelContent();
 });
+
+// Functions
+
+function deleteChar() {
+	if (panel.textContent=="Infinity") {
+		resetVars();
+	}
+	else if (currentNumber=="first") {
+		num1 = num1.slice(0, -1);
+	}
+	else if(currentNumber=="second" && num2) {
+		num2 = num2.slice(0, -1);
+	}
+	else {
+		operator = operator.slice(0, -1);
+		currentNumber = "first";
+	}
+	displayPanelContent();
+}
+
+function displayDot() {
+	if (
+		currentNumber=="first" && 
+		num1 &&
+		!num1.includes(".")
+		) {
+		num1 += ".";
+	}
+	else if (
+		currentNumber=="second" && 
+		num2 &&
+		!num2.includes(".")
+		) {
+		num2 += ".";
+	}
+	displayPanelContent();
+}
+
+function checkForSymbols(scope) {
+	return symbols.some(symbol => {
+		if (scope=="lastChar") {
+			return panel.textContent.charAt(
+				panel.textContent.length - 1) == symbol;
+		}
+		else {
+			return panel.textContent.includes(symbol);
+		}
+	});
+};
+
+function resetVars() {
+	num1 = ""
+	operator = ""
+	num2 = ""
+};
+
+function operate(
+	num1, 
+	operator, 
+	num2
+) {
+	let result;
+
+	switch(operator) {
+		case "+":
+			result = num1 + num2;
+			break;
+		case "-":
+			result = num1 - num2;
+			break;
+		case "x":
+			result = num1 * num2;
+			break;
+		case "÷":
+			result = num1 / num2;
+			break
+	};
+
+	return result;
+};
+
+function displayResult(resetOperator) {
+	let result = operate(parseFloat(num1), operator, parseFloat(num2));
+	if (!Number.isInteger(result)) {
+		result = result.toFixed(2);
+	}
+	panel.textContent = result;
+	num1 = String(result);
+	if (resetOperator) {
+		operator = "";
+	}
+	num2 = "";
+	currentNumber = "first";
+};
+
+function displayPanelContent() {
+	panel.textContent = num1 + operator + num2;
+};
